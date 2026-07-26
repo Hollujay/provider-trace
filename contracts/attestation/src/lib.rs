@@ -4,12 +4,26 @@ mod types;
 mod errors;
 mod test;
 
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Vec};
+use soroban_sdk::{contract, contractimpl, contractevent, Address, BytesN, Env, String, Vec};
 use crate::types::{Attestation, DataKey, ProviderInfo};
 use crate::errors::Error;
 
 #[contract]
 pub struct AttestationContract;
+
+#[contractevent]
+pub struct ProviderRegisteredEvent {
+    pub operator: Address,
+    pub registered_at: u64,
+}
+
+#[contractevent]
+pub struct AttestationSubmittedEvent {
+    pub period_start: u64,
+    pub period_end: u64,
+    pub uptime_percent: u32,
+    pub avg_latency_ms: u32,
+}
 
 #[contractimpl]
 impl AttestationContract {
@@ -32,10 +46,11 @@ impl AttestationContract {
         };
         env.storage().persistent().set(&DataKey::Provider(provider_id.clone()), &info);
         env.storage().persistent().set(&DataKey::History(provider_id), &Vec::<Attestation>::new(&env));
-        env.events().publish(
-            ("ProviderRegistered",),
-            (info.operator, info.registered_at),
-        );
+        ProviderRegisteredEvent {
+            operator: info.operator,
+            registered_at: info.registered_at,
+        }
+        .publish(&env);
         Ok(())
     }
 
@@ -74,10 +89,13 @@ impl AttestationContract {
         };
         history.push_back(attestation);
         env.storage().persistent().set(&DataKey::History(provider_id), &history);
-        env.events().publish(
-            ("AttestationSubmitted",),
-            (period_start, period_end, uptime_percent, avg_latency_ms),
-        );
+        AttestationSubmittedEvent {
+            period_start,
+            period_end,
+            uptime_percent,
+            avg_latency_ms,
+        }
+        .publish(&env);
         Ok(())
     }
 
