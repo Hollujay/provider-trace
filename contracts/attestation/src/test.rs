@@ -138,3 +138,38 @@ fn test_submit_attestation_multiple() {
     assert_eq!(history.get(0).unwrap().uptime_percent, 9500);
     assert_eq!(history.get(1).unwrap().uptime_percent, 9800);
 }
+
+// ---------------------------------------------------------------------------
+// get_provider_info / get_provider_history edge cases
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_get_provider_info_not_found() {
+    let (env, _, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+
+    let info = client.get_provider_info(&provider_id);
+    assert!(info.is_none());
+}
+
+#[test]
+fn test_get_provider_history_empty() {
+    let (env, _, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+
+    let history = client.get_provider_history(&provider_id);
+    assert_eq!(history.len(), 0);
+}
+
+#[test]
+fn test_get_provider_history_after_register_no_submissions() {
+    let (env, operator, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+    register(&env, &client, &operator, &provider_id);
+
+    let history = client.get_provider_history(&provider_id);
+    assert_eq!(history.len(), 0);
+}
