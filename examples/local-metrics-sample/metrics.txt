@@ -1,0 +1,21 @@
+# HELP soroban_uptime_basis_points Current uptime in basis points (0-10000)
+# TYPE soroban_uptime_basis_points gauge
+soroban_uptime_basis_points 9975
+# HELP soroban_avg_latency_ms Average RPC response latency in milliseconds
+# TYPE soroban_avg_latency_ms gauge
+soroban_avg_latency_ms 42
+# HELP soroban_uptime_seconds Total uptime seconds in the current period
+# TYPE soroban_uptime_seconds counter
+soroban_uptime_seconds 3599
+# HELP soroban_total_seconds Total seconds in the current period
+# TYPE soroban_total_seconds counter
+soroban_total_seconds 3600
+# HELP soroban_requests_total Total RPC requests handled
+# TYPE soroban_requests_total counter
+soroban_requests_total 1847
+# HELP process_cpu_seconds_total Total user and system CPU time spent in seconds
+# TYPE process_cpu_seconds_total counter
+process_cpu_seconds_total 42.5
+# HELP process_resident_memory_bytes Resident memory size in bytes
+# TYPE process_resident_memory_bytes gauge
+process_resident_memory_bytes 1.34217728e+08

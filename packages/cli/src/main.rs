@@ -14,9 +14,13 @@ struct Cli {
 enum Command {
     /// Fetch a node's /metrics endpoint and parse uptime/latency for submission
     FetchMetrics {
-        /// URL of the node's /metrics endpoint
-        #[arg(long)]
-        metrics_url: String,
+        /// URL of the node's /metrics endpoint (mutually exclusive with --file)
+        #[arg(long, required_unless_present = "file")]
+        metrics_url: Option<String>,
+
+        /// Path to a local metrics file (mutually exclusive with --metrics-url)
+        #[arg(long, required_unless_present = "metrics_url")]
+        file: Option<String>,
 
         /// Provider ID as hex (32 bytes)
         #[arg(long)]
@@ -192,22 +196,30 @@ async fn main() -> Result<()> {
     match cli.command {
         Command::FetchMetrics {
             metrics_url,
+            file,
             provider_id,
             period_start,
             period_end,
         } => {
-            println!("Fetching metrics from: {}", metrics_url);
-            let client = reqwest::Client::builder()
-                .timeout(std::time::Duration::from_secs(15))
-                .build()?;
-            let text = client
-                .get(&metrics_url)
-                .send()
-                .await
-                .context("failed to fetch /metrics endpoint")?
-                .text()
-                .await
-                .context("failed to read response body")?;
+            let text = if let Some(path) = file {
+                std::fs::read_to_string(&path)
+                    .context("failed to read metrics file")?
+            } else if let Some(url) = metrics_url {
+                println!("Fetching metrics from: {}", url);
+                let client = reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_secs(15))
+                    .build()?;
+                client
+                    .get(&url)
+                    .send()
+                    .await
+                    .context("failed to fetch /metrics endpoint")?
+                    .text()
+                    .await
+                    .context("failed to read response body")?
+            } else {
+                anyhow::bail!("either --metrics-url or --file is required");
+            };
 
             let (uptime_bp, latency_ms) = parse_provider_metrics(&text)?;
 
