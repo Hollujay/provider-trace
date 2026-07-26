@@ -56,3 +56,85 @@ fn test_register_provider_missing_auth() {
     let result = client.try_register_provider(&provider_id, &operator, &url(&env, "https://rpc.example.com"));
     assert!(result.is_err());
 }
+
+// ---------------------------------------------------------------------------
+// submit_attestation tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_submit_attestation_success() {
+    let (env, operator, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+    register(&env, &client, &operator, &provider_id);
+
+    client.submit_attestation(&provider_id, &100, &200, &9500, &150);
+
+    let history = client.get_provider_history(&provider_id);
+    assert_eq!(history.len(), 1);
+    let a = history.get(0).unwrap();
+    assert_eq!(a.period_start, 100);
+    assert_eq!(a.period_end, 200);
+    assert_eq!(a.uptime_percent, 9500);
+    assert_eq!(a.avg_latency_ms, 150);
+}
+
+#[test]
+fn test_submit_attestation_wrong_operator() {
+    let (env, operator, _other, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+    register(&env, &client, &operator, &provider_id);
+
+    env.set_auths(&[]);
+    let result = client.try_submit_attestation(&provider_id, &100, &200, &9500, &150);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_submit_attestation_invalid_period() {
+    let (env, operator, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+    register(&env, &client, &operator, &provider_id);
+
+    let result = client.try_submit_attestation(&provider_id, &200, &100, &9500, &150);
+    assert_eq!(result, Err(Ok(Error::InvalidPeriod)));
+}
+
+#[test]
+fn test_submit_attestation_invalid_uptime() {
+    let (env, operator, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+    register(&env, &client, &operator, &provider_id);
+
+    let result = client.try_submit_attestation(&provider_id, &100, &200, &10001, &150);
+    assert_eq!(result, Err(Ok(Error::InvalidUptimeValue)));
+}
+
+#[test]
+fn test_submit_attestation_provider_not_found() {
+    let (env, _operator, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+
+    let result = client.try_submit_attestation(&provider_id, &100, &200, &9500, &150);
+    assert_eq!(result, Err(Ok(Error::ProviderNotFound)));
+}
+
+#[test]
+fn test_submit_attestation_multiple() {
+    let (env, operator, _, provider_id) = setup();
+    let contract_id = env.register(AttestationContract, ());
+    let client = AttestationContractClient::new(&env, &contract_id);
+    register(&env, &client, &operator, &provider_id);
+
+    client.submit_attestation(&provider_id, &100, &200, &9500, &150);
+    client.submit_attestation(&provider_id, &200, &300, &9800, &120);
+
+    let history = client.get_provider_history(&provider_id);
+    assert_eq!(history.len(), 2);
+    assert_eq!(history.get(0).unwrap().uptime_percent, 9500);
+    assert_eq!(history.get(1).unwrap().uptime_percent, 9800);
+}
