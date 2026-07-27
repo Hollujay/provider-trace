@@ -32,6 +32,6 @@ Please distinguish between two categories of report:
    could bypass `require_auth()`, compromise the operator key check, or
    otherwise subvert the contract's intended security boundary, report it
    **privately** via the GitHub Security Advisories tab
-   (https://github.com/anomalyco/provider-trace/security/advisories/new)
+   (https://github.com/Hollujay/provider-trace/security/advisories/new)
    rather than a public issue. Publishing a working exploit before a fix
    ships would allow it to be used against live deployments on mainnet.
