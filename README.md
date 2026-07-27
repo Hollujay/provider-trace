@@ -1,86 +1,110 @@
 # provider-trace
 
-On-chain attestation system for Soroban RPC and indexer operators to post
-signed, self-reported uptime and latency records.
+[![CI](https://github.com/Hollujay/provider-trace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/provider-trace/actions/workflows/ci.yml)
 
-## What this is and what it is not
+A Soroban contract and CLI for RPC and indexer operators to post signed, self-reported uptime and latency records on-chain, so a dApp can check a provider's history before depending on it.
 
-provider-trace lets an RPC/indexer operator register a provider identity and
-periodically submit signed uptime/latency attestations, pulled from their own
-real metrics. Any dApp can query a provider's full history before deciding to
-depend on them.
+## What this is (and isn't)
 
-**This is self-attested data.** The contract's only trust boundary is
-`require_auth()` confirming the submitter is the registered operator. The
-contract does not verify the submitted numbers are true. It does not detect
-lying. It does not solve Sybil resistance.
+This data is self-attested. It is not independently verified.
 
-If you find yourself thinking "this proves a provider is reliable", stop and
-re-read: this shows what the provider has reported about itself. Nothing more.
+- Only a provider's registered operator can submit data about that provider. The contract enforces this with `require_auth()`, nothing more.
 
-## Contract
+- The contract does not check whether submitted uptime or latency values are true.
 
-### Types
+- There is no dispute mechanism, no slashing, no third-party verification. These are explicitly out of scope, see CONTRIBUTING.md.
 
-```rust
-struct ProviderInfo {
-    operator: Address,
-    endpoint_url: String,
-    registered_at: u64,
-}
+Treat this data the way you'd treat a provider's own marketing claim: useful as a structured, queryable history, not as proof of reliability.
 
-struct Attestation {
-    period_start: u64,
-    period_end: u64,
-    uptime_percent: u32,   // basis points, 0 to 10000
-    avg_latency_ms: u32,
-    submitted_at: u64,
-}
-```
+## Quick start
 
-### Functions
+Requires Rust (stable, edition 2021) and the Stellar CLI if you want to deploy the contract yourself.
 
-| Function | Auth | Description |
-|---|---|---|
-| `register_provider` | `operator.require_auth()` | Register a provider identity |
-| `submit_attestation` | `ProviderInfo.operator.require_auth()` | Submit a self-reported attestation |
-| `get_provider_info` | none | Read provider registration |
-| `get_provider_history` | none | Read all attestations for a provider |
+```bash
 
-## CLI
+git clone https://github.com/Hollujay/provider-trace.git
 
-```
-cargo run -p provider-trace-cli -- fetch-metrics \
-  --metrics-url https://your-node.example.com/metrics \
-  --provider-id <32-byte-hex> \
-  --period-start <unix-ts> \
-  --period-end <unix-ts>
-```
+cd provider-trace
 
-To test with a local metrics file:
-
-```
-cargo run -p provider-trace-cli -- fetch-metrics \
-  --file examples/local-metrics-sample/metrics.txt \
-  --provider-id 0000...0000 \
-  --period-start 1000000 \
-  --period-end 1003600
-```
-
-## Build & Test
-
-```sh
 cargo build --workspace
+
 cargo test --workspace
-cargo clippy --workspace -- -D warnings
+
 ```
 
-Minimum Rust version: 1.79 (the SDK dependency may require a later version).
+Parse a node's real metrics into attestation values:
 
-## Project status
+```bash
 
-Experimental. Do not use in production.
+cargo run --bin provider-trace-cli -- fetch-metrics \
 
-## License
+  --file examples/local-metrics-sample/metrics.txt \
 
-TBD
+  --provider-id <32-byte-hex-id> \
+
+  --period-start <unix-seconds> \
+
+  --period-end <unix-seconds>
+
+```
+
+```
+
+Parsed attestation values (self-reported, unverified):
+
+  Provider ID:     ...
+
+  Period start:    ...
+
+  Period end:      ...
+
+  Uptime (bp):     9975 (99.75%)
+
+  Avg latency ms:  42
+
+```
+
+Or fetch directly from a live node with `--metrics-url` instead of `--file`.
+
+## Architecture
+
+```
+
+Node's /metrics endpoint
+
+        |
+
+        v
+
+   CLI fetch-metrics (parses uptime/latency, no floats, basis points)
+
+        |
+
+        v
+
+   submit_attestation() -- operator.require_auth()
+
+        |
+
+        v
+
+   Contract storage (per-provider history, append-only)
+
+        |
+
+        v
+
+   get_provider_history() -- anyone can query, no auth needed
+
+```
+
+`register_provider` binds a provider ID to one operator address, permanently. `submit_attestation` is the only place the trust boundary lives, only that operator can post for that provider.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for scope, setup, and code style, including what this project explicitly will not add. Security issues, see [SECURITY.md](./SECURITY.md).
+
+## Maintainer
+
+[@Hollujay](https://github.com/Hollujay)
+
