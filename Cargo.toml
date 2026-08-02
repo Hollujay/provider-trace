@@ -4,3 +4,6 @@ members = [
     "contracts/attestation",
     "packages/cli",
 ]
+
+[workspace.package]
+license = "Apache-2.0"
