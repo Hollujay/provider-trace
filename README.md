@@ -1,6 +1,7 @@
 # provider-trace
 
 [![CI](https://github.com/Hollujay/provider-trace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/provider-trace/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 A Soroban contract and CLI for RPC and indexer operators to post signed, self-reported uptime and latency records on-chain, so a dApp can check a provider's history before depending on it.
 
