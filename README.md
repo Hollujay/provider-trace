@@ -105,7 +105,9 @@ Node's /metrics endpoint
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for scope, setup, and code style, including what this project explicitly will not add. Security issues, see [SECURITY.md](./SECURITY.md).
 
-## Maintainer
+## Maintainers
 
-[@Hollujay](https://github.com/Hollujay)
+| Name | GitHub |
+|---|---|
+| Hollujay | [@Hollujay](https://github.com/Hollujay) |
 
