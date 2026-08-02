@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="400" viewBox="0 0 1600 400">
+<rect width="1600" height="400" fill="#0A0F17"/>
+<rect x="70" y="70" width="180" height="180" rx="24" fill="none" stroke="#56E39F" stroke-width="8"/>
+<line x1="110" y1="210" x2="160" y2="160" stroke="#56E39F" stroke-width="8"/>
+<line x1="160" y1="160" x2="220" y2="120" stroke="#56E39F" stroke-width="8"/>
+<circle cx="110" cy="210" r="10" fill="#56E39F"/>
+<circle cx="160" cy="160" r="10" fill="#56E39F"/>
+<circle cx="220" cy="120" r="10" fill="#56E39F"/>
+<text x="320" y="155" font-family="Arial" font-size="72" font-weight="700" fill="#FFFFFF">Provider Trace</text>
+<text x="320" y="220" font-family="Arial" font-size="32" fill="#56E39F">Trace provider history before you depend on it.</text>
+<text x="320" y="275" font-family="Arial" font-size="24" fill="#8A94A6">Self-attested uptime and latency records for Soroban infrastructure.</text>
+</svg>

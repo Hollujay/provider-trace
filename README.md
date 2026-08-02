@@ -1,3 +1,5 @@
+![provider-trace](assets/provider-trace-banner.svg)
+
 # provider-trace
 
 [![CI](https://github.com/Hollujay/provider-trace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/provider-trace/actions/workflows/ci.yml)
