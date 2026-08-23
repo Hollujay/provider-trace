@@ -1,0 +1,8 @@
+fix: chore: add issue and pull request templates
+
+- .github/ISSUE_TEMPLATE/bug_report.md
+- .github/pull_request_template.md
+
+Fixes #11
+
+Signed-off-by: Vedant Madane <6527493+VedantMadane@users.noreply.github.com>
